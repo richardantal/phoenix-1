@@ -27,7 +27,7 @@
   </parent>
   <groupId>org.apache.phoenix</groupId>
   <artifactId>phoenix-hbase-compat-2.3.0</artifactId>
-  <version>5.1.0-SNAPSHOT</version>
+  <version>5.1.0</version>
   <name>Phoenix Hbase 2.3.0 compatibility</name>
   <description>Compatibility module for HBase 2.3.0+</description>
 
