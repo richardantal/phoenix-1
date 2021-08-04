@@ -93,7 +93,11 @@ import org.apache.phoenix.schema.types.PTimestamp;
 import org.apache.phoenix.schema.types.PTinyint;
 import org.apache.phoenix.schema.types.PVarbinary;
 import org.apache.phoenix.schema.types.PVarchar;
+import org.apache.phoenix.util.DateUtil;
 import org.apache.phoenix.util.SQLCloseable;
+import org.joda.time.DateTime;
+import org.joda.time.chrono.ISOChronology;
+import org.joda.time.chrono.JulianChronology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -446,6 +450,7 @@ public class PhoenixResultSet implements ResultSet, SQLCloseable {
         if (value == null) {
             return null;
         }
+        value = DateUtil.getSQLDateInISOChrono(value.getTime());
         return value;
     }
 
@@ -463,6 +468,7 @@ public class PhoenixResultSet implements ResultSet, SQLCloseable {
         if (wasNull) {
             return null;
         }
+        value = DateUtil.getSQLDateInISOChrono(value.getTime());
         cal.setTime(value);
         return new Date(cal.getTimeInMillis());
     }
@@ -687,7 +693,18 @@ public class PhoenixResultSet implements ResultSet, SQLCloseable {
         // This provides a simple way of getting a reasonable string representation
         // for types like DATE and TIME
         Format formatter = statement.getFormatter(type);
-        return formatter == null ? value.toString() : formatter.format(value);
+        if ( formatter == null) {
+            return value.toString();
+        } else {
+            if (value instanceof java.sql.Date) {
+                value = DateUtil.getSQLDateInISOChrono(((java.sql.Date) value).getTime());
+            } else if (value instanceof java.sql.Time) {
+                value = DateUtil.getSQLDateInISOChrono(((java.sql.Time) value).getTime());
+            } else if (value instanceof java.sql.Timestamp) {
+                value = DateUtil.getSQLDateInISOChrono(((java.sql.Timestamp) value).getTime());
+            }
+            return formatter.format(value);
+        }
     }
 
     @Override
@@ -734,6 +751,10 @@ public class PhoenixResultSet implements ResultSet, SQLCloseable {
         Timestamp value = (Timestamp)getRowProjector().getColumnProjector(columnIndex-1)
                 .getValue(currentRow, PTimestamp.INSTANCE, ptr);
         wasNull = (value == null);
+        if (wasNull) {
+            return null;
+        }
+        value = DateUtil.getSQLTimestampInISOChrono(value.getTime(), value.getNanos());
         return value;
     }
 

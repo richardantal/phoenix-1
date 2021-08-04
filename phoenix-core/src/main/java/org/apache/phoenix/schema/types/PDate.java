@@ -81,6 +81,7 @@ public class PDate extends PDataType<Date> {
             return null;
         }
         if (actualType.getCodec() != null ) {
+//            return DateUtil.getDateFromLong(actualType.getCodec().decodeLong(b, o, sortOrder));
             return new Date(actualType.getCodec().decodeLong(b, o, sortOrder));
         } else if (actualType == PTimestamp.INSTANCE) {
             return new Date(PDate.INSTANCE.getCodec().decodeLong(b, o, sortOrder));

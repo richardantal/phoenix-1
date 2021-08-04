@@ -40,8 +40,11 @@ import org.apache.phoenix.schema.types.PDate;
 import org.apache.phoenix.schema.types.PTimestamp;
 import org.apache.phoenix.schema.types.PUnsignedDate;
 import org.apache.phoenix.schema.types.PUnsignedTimestamp;
+import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.chrono.ISOChronology;
+import org.joda.time.chrono.GJChronology;
+import org.joda.time.chrono.JulianChronology;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
 import org.joda.time.format.ISODateTimeFormat;
@@ -77,6 +80,14 @@ public class DateUtil {
         .appendOptional(new DateTimeFormatterBuilder()
                 .append(ISODateTimeFormat.timeParser()).toParser())
         .toFormatter().withChronology(ISOChronology.getInstanceUTC());
+
+//    private static final DateTimeFormatter JULIAN_DATE_TIME_FORMATTER = new DateTimeFormatterBuilder()
+//            .append(ISODateTimeFormat.dateParser())
+//            .appendOptional(new DateTimeFormatterBuilder()
+//                    .appendLiteral(' ').toParser())
+//            .appendOptional(new DateTimeFormatterBuilder()
+//                    .append(ISODateTimeFormat.timeParser()).toParser())
+//            .toFormatter().withChronology(GJChronology.getInstanceUTC());
     
     private DateUtil() {
     }
@@ -148,6 +159,10 @@ public class DateUtil {
     }
 
     public static DateTimeParser getDateTimeParser(String pattern, PDataType pDataType, String timeZoneId) {
+        return getDateTimeParser(pattern, pDataType, timeZoneId, false);
+    }
+
+    public static DateTimeParser getDateTimeParser(String pattern, PDataType pDataType, String timeZoneId, boolean getJulean) {
         TimeZone timeZone = getTimeZone(timeZoneId);
         String defaultPattern = getDefaultFormat(pDataType);
         if (pattern == null || pattern.length() == 0) {
@@ -155,10 +170,19 @@ public class DateUtil {
         }
         if(defaultPattern.equals(pattern)) {
             return ISODateFormatParserFactory.getParser(timeZone);
+//            if (getJulean){
+//                return JulianDateFormatParserFactory.getParser(timeZone);
+//            }
+//            else {
+//                return ISODateFormatParserFactory.getParser(timeZone);
+//            }
+
         } else {
             return new SimpleDateFormatParser(pattern, timeZone);
         }
     }
+
+
 
     public static DateTimeParser getDateTimeParser(String pattern, PDataType pDataType) {
         return getDateTimeParser(pattern, pDataType, null);
@@ -190,9 +214,84 @@ public class DateUtil {
         return ISODateFormatParser.getInstance().parseDateTime(dateTimeValue);
     }
 
+//    private static long parseJulianDateTime(String dateTimeValue) {
+//        return JulianDateFormatParser.getInstance().parseDateTime(dateTimeValue);
+//    }
+
+    private static long getLongInJulianChrono(long ts) {
+        DateTime dt1 = new DateTime(ts, GJChronology.getInstanceUTC());
+        DateTime dt2 = new DateTime(ts, ISOChronology.getInstanceUTC());
+        Date d1 = parseDate(dt1.toString());
+        Date d2 = parseDate(dt2.toString());
+        long l1 = d1.getTime();
+        long l2 = d2.getTime();
+        return (ts + (l1 - l2));
+    }
+
+    public static Date getSQLDateInISOChrono(long ts) {
+        return getSQLDateInISOChrono(ts, 0);
+    }
+
+    public static Date getSQLDateInISOChrono(long ts, long nanos) {
+        DateTime dt1 = new DateTime(ts, GJChronology.getInstanceUTC());
+        DateTime dt2 = new DateTime(ts, ISOChronology.getInstanceUTC());
+        Date d1 = parseDate(dt1.toString());
+        Date d2 = parseDate(dt2.toString());
+        long l1 = d1.getTime();
+        long l2 = d2.getTime();
+        return new Date(ts - (l1 - l2));
+    }
+
+    public static Timestamp getSQLTimestampInISOChrono(long ts) {
+        return getSQLTimestampInISOChrono(ts, 0);
+    }
+
+    public static Timestamp getSQLTimestampInISOChrono(long ts, int nanos) {
+        DateTime dt1 = new DateTime(ts, GJChronology.getInstanceUTC());
+        DateTime dt2 = new DateTime(ts, ISOChronology.getInstanceUTC());
+        Timestamp d1 = new Timestamp(parseDate(dt1.toString()).getTime());
+        Timestamp d2 = new Timestamp(parseDate(dt2.toString()).getTime());
+        long l1 = d1.getTime();
+        long l2 = d2.getTime();
+        Timestamp t = new Timestamp(ts - (l1 - l2));
+        t.setNanos(nanos);
+        return t;
+    }
+
+//    public static Date getDateFromLong(Long ts) {
+//        DateTime dt = new DateTime(ts, JulianChronology.getInstanceUTC());
+//        java.util.Date ddt = dt.toDate();
+//        DateTime dt2 = new DateTime(ts);
+//        java.util.Date ddt2 = dt2.toDate();
+//
+//        DateTime ddif = dt2.minus(dt.getMillis());
+//        DateTime dt2J = dt2.withChronology(JulianChronology.getInstanceUTC());
+//        DateTime dtISO = dt2.withChronology(ISOChronology.getInstanceUTC());
+//
+//        Date date = parseDate(dt.toString());
+//        Date date1 = new Date(ts);
+//        long l1 = dt.getMillis();
+//        long l2 = date1.getTime();
+//
+//        long diff = l2 - l1;
+//
+//        DateTime dt22 = new DateTime(ts - diff, JulianChronology.getInstanceUTC()).toDateTimeISO();
+//        Date date2 = parseDate(dt22.toString());
+//        long l3 = dt22.getMillis();
+//        long l4 = date2.getTime();
+//
+//        long l31 = dt22.toDateTimeISO().getMillis();
+//
+//        return date2;
+//    }
+
     public static Date parseDate(String dateValue) {
         return new Date(parseDateTime(dateValue));
     }
+
+//    public static Date parseJulianDate(String dateValue) {
+//        return new Date(parseJulianDateTime(dateValue));
+//    }
 
     public static Time parseTime(String timeValue) {
         return new Time(parseDateTime(timeValue));
@@ -274,8 +373,8 @@ public class DateUtil {
         @Override
         public long parseDateTime(String dateTimeString) throws IllegalDataException {
             try {
-                java.util.Date date =parser.parse(dateTimeString);
-                return date.getTime();
+                java.util.Date date = parser.parse(dateTimeString);
+                return getLongInJulianChrono(date.getTime());
             } catch (ParseException e) {
                 throw new IllegalDataException("Unable to parse date/time '" + dateTimeString + "' using format string of '" + datePattern + "'.");
             }
@@ -344,4 +443,63 @@ public class DateUtil {
             return formatter.getZone().toTimeZone();
         }
     }
+
+//    private static class JulianDateFormatParserFactory {
+//        private JulianDateFormatParserFactory() {}
+//
+//        public static DateTimeParser getParser(final TimeZone timeZone) {
+//            // If timeZone matches default, get singleton DateTimeParser
+//            if (timeZone.equals(DEFAULT_TIME_ZONE)) {
+//                return JulianDateFormatParser.getInstance();
+//            }
+//            // Otherwise, create new DateTimeParser
+//            return new DateTimeParser() {
+//                private final DateTimeFormatter formatter = JULIAN_DATE_TIME_FORMATTER
+//                        .withZone(DateTimeZone.forTimeZone(timeZone));
+//
+//                @Override
+//                public long parseDateTime(String dateTimeString) throws IllegalDataException {
+//                    try {
+//                        return formatter.parseDateTime(dateTimeString).getMillis();
+//                    } catch(IllegalArgumentException ex) {
+//                        throw new IllegalDataException(ex);
+//                    }
+//                }
+//
+//                @Override
+//                public TimeZone getTimeZone() {
+//                    return timeZone;
+//                }
+//            };
+//        }
+//    }
+//
+//    /**
+//     * This class is our default DateTime string parser
+//     */
+//    private static class JulianDateFormatParser implements DateTimeParser {
+//        private static final JulianDateFormatParser INSTANCE = new JulianDateFormatParser();
+//
+//        public static JulianDateFormatParser getInstance() {
+//            return INSTANCE;
+//        }
+//
+//        private final DateTimeFormatter formatter = JULIAN_DATE_TIME_FORMATTER.withZone(DateTimeZone.UTC);
+//
+//        private JulianDateFormatParser() {}
+//
+//        @Override
+//        public long parseDateTime(String dateTimeString) throws IllegalDataException {
+//            try {
+//                return formatter.parseDateTime(dateTimeString).getMillis();
+//            } catch(IllegalArgumentException ex) {
+//                throw new IllegalDataException(ex);
+//            }
+//        }
+//
+//        @Override
+//        public TimeZone getTimeZone() {
+//            return formatter.getZone().toTimeZone();
+//        }
+//    }
 }

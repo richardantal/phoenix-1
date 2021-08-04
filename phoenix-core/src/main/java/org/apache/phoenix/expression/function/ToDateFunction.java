@@ -20,6 +20,7 @@ package org.apache.phoenix.expression.function;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -91,6 +92,7 @@ public class ToDateFunction extends ScalarFunction {
     
     private void init(String dateFormat, String timeZoneId) {
         this.dateFormat = dateFormat;
+//        this.dateParser = DateUtil.getDateTimeParser(dateFormat, getDataType(), timeZoneId, true);
         this.dateParser = DateUtil.getDateTimeParser(dateFormat, getDataType(), timeZoneId);
         // Store resolved timeZoneId, as if it's LOCAL, we don't want the
         // server to evaluate using the local time zone. Instead, we want
