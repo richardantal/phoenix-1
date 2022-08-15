@@ -39,6 +39,7 @@
     <url>https://www.apache.org</url>
   </organization>
 
+
   <modules>
     <module>phoenix-hbase-compat-2.2.1</module>
     <module>phoenix-hbase-compat-2.1.6</module>
