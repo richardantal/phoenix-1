@@ -71,7 +71,7 @@ public class ConcurrentGetTablesIT extends BaseTest {
 
   @BeforeClass
   public static synchronized void doSetup() throws Exception {
-    initCluster(2);
+    initCluster(20);
   }
 
   // This test is important to verify that concurrent getTable() calls as part of executing

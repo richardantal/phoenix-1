@@ -129,7 +129,8 @@ public class MutableIndexReplicationIT extends BaseTest {
     conf1.setLong(HConstants.THREAD_WAKE_FREQUENCY, 100);
     conf1.setInt("replication.stats.thread.period.seconds", 5);
     conf1.setBoolean("hbase.tests.use.shortcircuit.reads", false);
-    conf1.set(ConnectionInfo.CLIENT_CONNECTION_REGISTRY_IMPL_CONF_KEY, ZKConnectionInfo.ZK_REGISTRY_NAME);
+    conf1.set(ConnectionInfo.CLIENT_CONNECTION_REGISTRY_IMPL_CONF_KEY,
+      ZKConnectionInfo.ZK_REGISTRY_NAME);
 
     utility1 = new IntegrationTestingUtility(conf1);
     utility1.startMiniCluster();
@@ -147,7 +148,8 @@ public class MutableIndexReplicationIT extends BaseTest {
     conf2.setInt(HConstants.HBASE_CLIENT_RETRIES_NUMBER, 6);
     conf2.setBoolean("dfs.support.append", true);
     conf2.setBoolean("hbase.tests.use.shortcircuit.reads", false);
-    conf2.set(ConnectionInfo.CLIENT_CONNECTION_REGISTRY_IMPL_CONF_KEY, ZKConnectionInfo.ZK_REGISTRY_NAME);
+    conf2.set(ConnectionInfo.CLIENT_CONNECTION_REGISTRY_IMPL_CONF_KEY,
+      ZKConnectionInfo.ZK_REGISTRY_NAME);
 
     utility2 = new IntegrationTestingUtility(conf2);
     utility2.setZkCluster(miniZK);

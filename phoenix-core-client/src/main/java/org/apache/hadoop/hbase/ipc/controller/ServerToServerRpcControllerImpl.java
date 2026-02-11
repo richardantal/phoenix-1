@@ -56,9 +56,17 @@ public class ServerToServerRpcControllerImpl extends ServerRpcController
 
   @Override
   public void setPriority(final TableName tn) {
-    if (SYSTEM_TABLE_NAMES.contains(tn.getNameAsString())) {
+    if (tn != null && SYSTEM_TABLE_NAMES.contains(tn.getNameAsString())) {
       setPriority(this.priority);
     }
+  }
+
+  // @Override after Hbase 3.0
+  public void setPriority(int priority, final TableName tn) {
+    System.out
+      .println("asd server to server setPriority called with " + priority + " " + this.priority);
+    setPriority(tn);
+    setPriority(Math.max(priority, this.priority));
   }
 
   @Override

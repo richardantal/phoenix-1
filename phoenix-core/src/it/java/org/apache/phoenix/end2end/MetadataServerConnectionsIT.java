@@ -78,8 +78,9 @@ public class MetadataServerConnectionsIT extends BaseTest {
 
   @BeforeClass
   public static synchronized void doSetup() throws Exception {
-    //FIXME implement connection counting for HBase 3+
-    assumeTrue("TODO connection counting only works for HBase 2.x", HbaseCompatCapabilities.BRANCH_2);
+    // FIXME implement connection counting for HBase 3+
+    assumeTrue("TODO connection counting only works for HBase 2.x",
+      HbaseCompatCapabilities.BRANCH_2);
     Map<String, String> props = Maps.newHashMapWithExpectedSize(1);
     props.put(QueryServices.TASK_HANDLING_INITIAL_DELAY_MS_ATTRIB, Long.toString(Long.MAX_VALUE));
     props.put(DISABLE_VIEW_SUBTREE_VALIDATION, "true");
@@ -161,7 +162,7 @@ public class MetadataServerConnectionsIT extends BaseTest {
         long hTablePoolCount =
           Arrays.stream(th).filter(s -> s.getName().equals("htable-pool-0")).count();
         // Assert no default HTable threadpools are created.
-        assertEquals(0, hTablePoolCount); 
+        assertEquals(0, hTablePoolCount);
         LOGGER.debug("htable-pool-0 threads {}", hTablePoolCount);
 
         // Assert that the threadpool from Connection and HTable are the same.

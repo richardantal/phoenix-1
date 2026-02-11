@@ -879,7 +879,10 @@ public class PhoenixTableLevelMetricsIT extends BaseTest {
     } catch (CommitException e) {
       Throwable retriesExhaustedEx = null;
       for (Throwable t = e.getCause(); t != null; t = t.getCause()) {
-        if (t instanceof RetriesExhaustedWithDetailsException || t instanceof RetriesExhaustedException) {
+        if (
+          t instanceof RetriesExhaustedWithDetailsException
+            || t instanceof RetriesExhaustedException
+        ) {
           retriesExhaustedEx = t;
           break;
         }
@@ -929,7 +932,10 @@ public class PhoenixTableLevelMetricsIT extends BaseTest {
       } catch (CommitException e) {
         Throwable retriesExhaustedEx = null;
         for (Throwable t = e.getCause(); t != null; t = t.getCause()) {
-          if (t instanceof RetriesExhaustedWithDetailsException || t instanceof RetriesExhaustedException) {
+          if (
+            t instanceof RetriesExhaustedWithDetailsException
+              || t instanceof RetriesExhaustedException
+          ) {
             retriesExhaustedEx = t;
             break;
           }
@@ -1259,7 +1265,10 @@ public class PhoenixTableLevelMetricsIT extends BaseTest {
       } catch (CommitException e) {
         Throwable retriesExhaustedEx = null;
         for (Throwable t = e.getCause(); t != null; t = t.getCause()) {
-          if (t instanceof RetriesExhaustedWithDetailsException || t instanceof RetriesExhaustedException) {
+          if (
+            t instanceof RetriesExhaustedWithDetailsException
+              || t instanceof RetriesExhaustedException
+          ) {
             retriesExhaustedEx = t;
             break;
           }

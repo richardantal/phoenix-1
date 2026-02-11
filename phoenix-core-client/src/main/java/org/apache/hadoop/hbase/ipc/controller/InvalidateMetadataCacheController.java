@@ -44,6 +44,12 @@ public class InvalidateMetadataCacheController extends DelegatingHBaseRpcControl
     // Nothing
   }
 
+  // @Override after Hbase 3.0
+  public void setPriority(int priority, final TableName tn) {
+    setPriority(tn);
+    setPriority(priority);
+  }
+
   @Override
   public int getPriority() {
     return this.priority;

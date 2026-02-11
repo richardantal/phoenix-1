@@ -24,6 +24,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
+import org.apache.hadoop.hbase.ipc.RpcControllerFactory;
 import org.apache.phoenix.coprocessorclient.BaseScannerRegionObserverConstants;
 import org.apache.phoenix.query.BaseTest;
 import org.apache.phoenix.query.QueryServices;
@@ -56,6 +57,11 @@ public class SingleMetadataHandlerIT extends BaseTest {
     props.put(QueryServices.METADATA_HANDLER_COUNT_ATTRIB, Integer.toString(1));
     // single server-to-server rpc handler thread
     props.put(QueryServices.SERVER_SIDE_HANDLER_COUNT_ATTRIB, Integer.toString(1));
+    props.put(RpcControllerFactory.CUSTOM_CONTROLLER_CONF_KEY,
+      RpcControllerFactory.class.getName());
+    // DEFAULT_CLIENT_RPC_CONTROLLER_FACTORY would result in a creating MetadataRpcController and
+    // hanging test for HBase 3
+
     setUpTestDriver(new ReadOnlyProps(props.entrySet().iterator()));
   }
 

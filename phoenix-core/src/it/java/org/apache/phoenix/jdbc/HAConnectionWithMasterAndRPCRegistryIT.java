@@ -42,6 +42,7 @@ import org.apache.phoenix.end2end.NeedsOwnMiniClusterTest;
 import org.apache.phoenix.jdbc.ClusterRoleRecord.RegistryType;
 import org.apache.phoenix.query.ConnectionQueryServices;
 import org.apache.phoenix.query.ConnectionQueryServicesImpl;
+import org.apache.phoenix.query.QueryServices;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -105,6 +106,7 @@ public class HAConnectionWithMasterAndRPCRegistryIT {
     failoverHAGroupName = testName.getMethodName() + "_" + HighAvailabilityPolicy.FAILOVER.name();
     parallelClientProperties = HighAvailabilityTestingUtility.getHATestProperties();
     parallelClientProperties.setProperty(PHOENIX_HA_GROUP_ATTR, parallelHAGroupName);
+    parallelClientProperties.put(QueryServices.METADATA_HANDLER_COUNT_ATTRIB, Integer.toString(30));
 
     failoverClientProperties = HighAvailabilityTestingUtility.getHATestProperties();
     failoverClientProperties.setProperty(PHOENIX_HA_GROUP_ATTR, failoverHAGroupName);

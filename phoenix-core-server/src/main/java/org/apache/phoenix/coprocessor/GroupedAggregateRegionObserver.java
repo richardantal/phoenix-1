@@ -490,41 +490,44 @@ public class GroupedAggregateRegionObserver extends BaseScannerRegionObserver
               Bytes.toStringBinary(actualScanStartRowKey), Bytes.toStringBinary(scanStartRowKey));
             // If region has moved in the middle of the scan operation, after resetting
             // the scanner, hbase client sets latest received rowkey with include=false as new
-            // start rowkey. On branch 2 for forward scans this is converted to setting 
+            // start rowkey. On branch 2 for forward scans this is converted to setting
             // (latest received rowkey + \x00) with include=true as new
             // start rowkey for resuming the scan operation on the new scanner.
-            //FIXME what about reverse scans ?
-            //FIXME This feels very fragile. could we just always use skipValidRowsSent ?
-            //FIXME isStartKeyWithExclusion depends on the server HBase version. Fix this
-            //if HBase 2/3 client/server needs to work
-            if(!CompatUtil.isStartKeyWithExclusion(actualScanStartRowKey, actualScanIncludeStartRowKey, scanStartRowKey, includeStartRowKey)) {
+            // FIXME what about reverse scans ?
+            // FIXME This feels very fragile. could we just always use skipValidRowsSent ?
+            // FIXME isStartKeyWithExclusion depends on the server HBase version. Fix this
+            // if HBase 2/3 client/server needs to work
+            if (
+              !CompatUtil.isStartKeyWithExclusion(actualScanStartRowKey,
+                actualScanIncludeStartRowKey, scanStartRowKey, includeStartRowKey)
+            ) {
               skipValidRowsSent = true;
             }
             scan.setAttribute(QueryServices.PHOENIX_PAGING_NEW_SCAN_START_ROWKEY,
               actualScanStartRowKey);
             scan.setAttribute(QueryServices.PHOENIX_PAGING_NEW_SCAN_START_ROWKEY_INCLUDE,
               Bytes.toBytes(actualScanIncludeStartRowKey));
-//            if (
-//              Bytes.compareTo(ByteUtil.concat(actualScanStartRowKey, ByteUtil.ZERO_BYTE),
-//                scanStartRowKey) == 0
-//            ) {
-//              scan.setAttribute(QueryServices.PHOENIX_PAGING_NEW_SCAN_START_ROWKEY,
-//                actualScanStartRowKey);
-//              scan.setAttribute(QueryServices.PHOENIX_PAGING_NEW_SCAN_START_ROWKEY_INCLUDE,
-//                Bytes.toBytes(actualScanIncludeStartRowKey));
-//            } else {
-//              // This happens when the server side scanner has already sent some
-//              // rows back to the client and region has moved, so now we need to
-//              // use skipValidRowsSent flag and also reset the scanner
-//              // at paging region scanner level to re-read the previously sent
-//              // values in order to re-compute the aggregation and then return
-//              // only the next rowkey that was not yet sent back to the client.
-//              skipValidRowsSent = true;
-//              scan.setAttribute(QueryServices.PHOENIX_PAGING_NEW_SCAN_START_ROWKEY,
-//                actualScanStartRowKey);
-//              scan.setAttribute(QueryServices.PHOENIX_PAGING_NEW_SCAN_START_ROWKEY_INCLUDE,
-//                Bytes.toBytes(actualScanIncludeStartRowKey));
-//            }
+            // if (
+            // Bytes.compareTo(ByteUtil.concat(actualScanStartRowKey, ByteUtil.ZERO_BYTE),
+            // scanStartRowKey) == 0
+            // ) {
+            // scan.setAttribute(QueryServices.PHOENIX_PAGING_NEW_SCAN_START_ROWKEY,
+            // actualScanStartRowKey);
+            // scan.setAttribute(QueryServices.PHOENIX_PAGING_NEW_SCAN_START_ROWKEY_INCLUDE,
+            // Bytes.toBytes(actualScanIncludeStartRowKey));
+            // } else {
+            // // This happens when the server side scanner has already sent some
+            // // rows back to the client and region has moved, so now we need to
+            // // use skipValidRowsSent flag and also reset the scanner
+            // // at paging region scanner level to re-read the previously sent
+            // // values in order to re-compute the aggregation and then return
+            // // only the next rowkey that was not yet sent back to the client.
+            // skipValidRowsSent = true;
+            // scan.setAttribute(QueryServices.PHOENIX_PAGING_NEW_SCAN_START_ROWKEY,
+            // actualScanStartRowKey);
+            // scan.setAttribute(QueryServices.PHOENIX_PAGING_NEW_SCAN_START_ROWKEY_INCLUDE,
+            // Bytes.toBytes(actualScanIncludeStartRowKey));
+            // }
           }
         }
       }
@@ -549,8 +552,9 @@ public class GroupedAggregateRegionObserver extends BaseScannerRegionObserver
           System.arraycopy(firstCell.getRowArray(), firstCell.getRowOffset(), resultRowKey, 0,
             resultRowKey.length);
           // In case of regular scans, if the region moves and scanner is reset,
-          // hbase client checks the last returned row by the server, and sets the startRowkey to it with includeStartRowKey to false.
-          // On HBase 2 forwards scans this is converted to taking the rowkey and 
+          // hbase client checks the last returned row by the server, and sets the startRowkey to it
+          // with includeStartRowKey to false.
+          // On HBase 2 forwards scans this is converted to taking the rowkey and
           // appending "\x00" byte, and setting includeStartRowKey to before resuming the scan.
           // However, same is not the case with reverse scans. For the reverse scan,
           // hbase client checks the last returned row by the server, gets the
@@ -579,7 +583,8 @@ public class GroupedAggregateRegionObserver extends BaseScannerRegionObserver
               lastReturnedRowKey = CellUtil.cloneRow((Cell) resultsToReturn.get(0));
             }
             return moreRows;
-          } else if ( HbaseCompatCapabilities.BRANCH_2 && //FIXME handle client/server version mismatch
+          } else if (HbaseCompatCapabilities.BRANCH_2 && // FIXME handle client/server version
+                                                         // mismatch
             Bytes.compareTo(ByteUtil.concat(resultRowKey, ByteUtil.ZERO_BYTE), scanStartRowKey) == 0
           ) {
             // This can be true for forward scan case on HBase 2.
@@ -697,7 +702,8 @@ public class GroupedAggregateRegionObserver extends BaseScannerRegionObserver
         return true;
       }
       if (scanStartRowKey.length > 0 && !ScanUtil.isLocalIndex(scan)) {
-        if (hasRegionMoved() && HbaseCompatCapabilities.BRANCH_2) { //FIXME handle client/server version mismatch
+        if (hasRegionMoved() && HbaseCompatCapabilities.BRANCH_2) { // FIXME handle client/server
+                                                                    // version mismatch
           byte[] lastByte = new byte[] { scanStartRowKey[scanStartRowKey.length - 1] };
           if (scanStartRowKey.length > 1 && Bytes.compareTo(lastByte, ByteUtil.ZERO_BYTE) == 0) {
             byte[] prevKey = new byte[scanStartRowKey.length - 1];
@@ -724,7 +730,7 @@ public class GroupedAggregateRegionObserver extends BaseScannerRegionObserver
      * @return true if the region has moved in the middle of an ongoing scan operation.
      */
     // TODO are we positive that region move the only case this happens ?
-    // What about the case when includeStartRowKey was already false? 
+    // What about the case when includeStartRowKey was already false?
     // Is that possible with Phoenix ?
     private boolean hasRegionMoved() {
       return Bytes.compareTo(actualScanStartRowKey, scanStartRowKey) != 0
@@ -966,7 +972,7 @@ public class GroupedAggregateRegionObserver extends BaseScannerRegionObserver
           int regionLookupInMetaLen =
             RegionInfo.createRegionName(region.getTableDescriptor().getTableName(), new byte[1],
               HConstants.NINES, false).length;
-          if (HbaseCompatCapabilities.BRANCH_2 && //FIXME handle client/server version mismatch
+          if (HbaseCompatCapabilities.BRANCH_2 && // FIXME handle client/server version mismatch
             Bytes.compareTo(initStartRowKey, initStartRowKey.length - 1, 1, ByteUtil.ZERO_BYTE, 0,
               1) == 0
           ) {

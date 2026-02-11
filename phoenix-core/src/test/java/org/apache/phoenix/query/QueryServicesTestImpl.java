@@ -61,7 +61,7 @@ public final class QueryServicesTestImpl extends BaseQueryServicesImpl {
   private static final boolean DEFAULT_RUN_UPDATE_STATS_ASYNC = false;
   private static final boolean DEFAULT_COMMIT_STATS_ASYNC = false;
   public static final int DEFAULT_INDEX_HANDLER_COUNT = 5;
-  public static final int DEFAULT_METADATA_HANDLER_COUNT = 5;
+  public static final int DEFAULT_METADATA_HANDLER_COUNT = 20;
   public static final int DEFAULT_HCONNECTION_POOL_CORE_SIZE = 10;
   public static final int DEFAULT_HCONNECTION_POOL_MAX_SIZE = 10;
   public static final int DEFAULT_HTABLE_MAX_THREADS = 10;

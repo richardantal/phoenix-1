@@ -36,7 +36,6 @@ import java.sql.Statement;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
-import org.apache.phoenix.cache.ServerCacheClient;
 import org.apache.phoenix.jdbc.PhoenixTestDriver;
 import org.apache.phoenix.query.BaseTest;
 import org.apache.phoenix.query.QueryServices;
@@ -79,7 +78,8 @@ public class ContextClassloaderIT extends BaseTest {
   }
 
   protected static String getUrl() {
-    return "jdbc:phoenix+zk:localhost:" + hbaseTestUtil.getZkCluster().getClientPort() + ";test=true";
+    return "jdbc:phoenix+zk:localhost:" + hbaseTestUtil.getZkCluster().getClientPort()
+      + ";test=true";
   }
 
   @Test
@@ -177,7 +177,7 @@ public class ContextClassloaderIT extends BaseTest {
       try {
         target.run();
       } catch (Throwable t) {
-        LOGGER.error("XXXXX ",t);
+        LOGGER.error("XXXXX ", t);
         failed = true;
         throw new RuntimeException(t);
       }

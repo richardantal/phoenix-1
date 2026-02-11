@@ -1237,6 +1237,7 @@ public class CreateTableIT extends ParallelStatsDisabledIT {
         String val = htd.getValue("PRIORITY");
         assertNotNull("PRIORITY is not set for table:" + htd, val);
         assertTrue(Integer.parseInt(val) >= IndexUtil.getMetadataPriority(config));
+        System.out.println("asdasd priority: " + IndexUtil.getMetadataPriority(config));
       }
       Properties props = PropertiesUtil.deepCopy(TEST_PROPERTIES);
       String ddl = "CREATE TABLE " + fullTableName + TestUtil.TEST_TABLE_SCHEMA;

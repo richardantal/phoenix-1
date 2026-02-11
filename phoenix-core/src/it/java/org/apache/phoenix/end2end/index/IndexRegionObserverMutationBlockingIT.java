@@ -130,8 +130,8 @@ public class IndexRegionObserverMutationBlockingIT extends BaseTest {
         conn.commit();
         fail("Expected MutationBlockedIOException to be thrown");
       } catch (CommitException e) {
-        assertTrue("Expected MutationBlockedIOException in exception chain " + ExceptionUtils.getStackTrace(e),
-          containsMutationBlockedException(e));
+        assertTrue("Expected MutationBlockedIOException in exception chain "
+          + ExceptionUtils.getStackTrace(e), containsMutationBlockedException(e));
       }
     }
   }
@@ -225,7 +225,7 @@ public class IndexRegionObserverMutationBlockingIT extends BaseTest {
 
   private boolean containsMutationBlockedException(CommitException e) {
     Throwable cause = e.getCause();
-    if (cause instanceof RetriesExhaustedWithDetailsException ) { // HBase 2
+    if (cause instanceof RetriesExhaustedWithDetailsException) { // HBase 2
       RetriesExhaustedWithDetailsException re = (RetriesExhaustedWithDetailsException) cause;
       return re.getCause(0) instanceof MutationBlockedIOException;
     } else if (cause instanceof RetriesExhaustedException) { // HBase 3

@@ -265,7 +265,7 @@ public class QueryServicesOptions {
   public static final int DEFAULT_INDEX_HANDLER_COUNT = 30;
   public static final int DEFAULT_METADATA_HANDLER_COUNT = 30;
   public static final int DEFAULT_SERVERSIDE_HANDLER_COUNT = 30;
-  public static final int DEFAULT_INVALIDATE_CACHE_HANDLER_COUNT = 10;
+  public static final int DEFAULT_INVALIDATE_CACHE_HANDLER_COUNT = 20;
   public static final int DEFAULT_SYSTEM_MAX_VERSIONS = 1;
   public static final boolean DEFAULT_SYSTEM_KEEP_DELETED_CELLS = false;
 
@@ -416,7 +416,7 @@ public class QueryServicesOptions {
     (long) ConnectionProperty.UPDATE_CACHE_FREQUENCY.getValue("ALWAYS");
   public static final boolean DEFAULT_LAST_DDL_TIMESTAMP_VALIDATION_ENABLED = false;
   public static final boolean DEFAULT_PHOENIX_METADATA_INVALIDATE_CACHE_ENABLED = false;
-  public static final int DEFAULT_PHOENIX_METADATA_CACHE_INVALIDATION_THREAD_POOL_SIZE = 20;
+  public static final int DEFAULT_PHOENIX_METADATA_CACHE_INVALIDATION_THREAD_POOL_SIZE = 30;
 
   // default system task handling interval in milliseconds
   public static final long DEFAULT_TASK_HANDLING_INTERVAL_MS = 60 * 1000; // 1 min

@@ -61,11 +61,19 @@ class ServerRpcController extends DelegatingHBaseRpcController {
 
   @Override
   public void setPriority(final TableName tn) {
-    if (SYSTEM_TABLE_NAMES.contains(tn.getNameAsString())) {
+    System.out.println("asd server setPriority called with tn " + tn);
+    if (tn != null && SYSTEM_TABLE_NAMES.contains(tn.getNameAsString())) {
       setPriority(this.priority);
     } else {
       super.setPriority(tn);
     }
+  }
+
+  // @Override after Hbase 3.0
+  public void setPriority(int priority, final TableName tn) {
+    System.out.println("asd server setPriority called with " + priority + " " + this.priority);
+    setPriority(tn);
+    setPriority(Math.max(priority, this.priority));
   }
 
 }

@@ -41,7 +41,6 @@ import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.RegionInfo;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.coprocessor.ObserverContext;
-import org.apache.hadoop.hbase.coprocessor.RegionCoprocessorEnvironment;
 import org.apache.hadoop.hbase.coprocessor.SimpleRegionObserver;
 import org.apache.phoenix.coprocessorclient.BaseScannerRegionObserverConstants;
 import org.apache.phoenix.end2end.NeedsOwnMiniClusterTest;
@@ -323,8 +322,7 @@ public class PhoenixQueryTimeoutIT extends ParallelStatsDisabledIT {
     }
 
     @Override
-    public void preScannerOpen(final ObserverContext c,
-      final Scan scan) {
+    public void preScannerOpen(final ObserverContext c, final Scan scan) {
       try {
         Thread.sleep(delay);
       } catch (InterruptedException e) {

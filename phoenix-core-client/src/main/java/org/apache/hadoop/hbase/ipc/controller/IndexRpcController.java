@@ -44,11 +44,17 @@ class IndexRpcController extends DelegatingHBaseRpcController {
 
   @Override
   public void setPriority(final TableName tn) {
-    if (!tn.isSystemTable() && !tn.getNameAsString().equals(tracingTableName)) {
+    if (tn != null && !tn.isSystemTable() && !tn.getNameAsString().equals(tracingTableName)) {
       setPriority(this.priority);
     } else {
       super.setPriority(tn);
     }
+  }
+
+  // @Override after Hbase 3.0
+  public void setPriority(int priority, final TableName tn) {
+    setPriority(tn);
+    setPriority(priority);
   }
 
 }

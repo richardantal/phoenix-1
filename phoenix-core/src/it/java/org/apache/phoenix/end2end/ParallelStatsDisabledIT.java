@@ -26,6 +26,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hbase.HConstants;
 import org.apache.phoenix.coprocessorclient.BaseScannerRegionObserverConstants;
 import org.apache.phoenix.query.BaseTest;
 import org.apache.phoenix.query.QueryServices;
@@ -53,6 +54,9 @@ public abstract class ParallelStatsDisabledIT extends BaseTest {
     props.put(BaseScannerRegionObserverConstants.PHOENIX_MAX_LOOKBACK_AGE_CONF_KEY,
       Integer.toString(60 * 60)); // An hour
     props.put(QueryServices.USE_STATS_FOR_PARALLELIZATION, Boolean.toString(false));
+    props.put(QueryServices.METADATA_HANDLER_COUNT_ATTRIB, Integer.toString(50));
+    props.put(QueryServices.SERVER_SIDE_HANDLER_COUNT_ATTRIB, Integer.toString(40));
+    props.put(HConstants.REGION_SERVER_HANDLER_COUNT, Integer.toString(30));
     setUpTestDriver(new ReadOnlyProps(props.entrySet().iterator()));
   }
 

@@ -124,12 +124,13 @@ public class CompatUtil {
     admin.close();
   }
 
-  public static boolean isStartKeyWithExclusion(byte[] actualScanStartRowKey, boolean actualScanIncludeStartRowKey,
-    byte[] scanStartRowKey, boolean includeStartRowKey) {
+  public static boolean isStartKeyWithExclusion(byte[] actualScanStartRowKey,
+    boolean actualScanIncludeStartRowKey, byte[] scanStartRowKey, boolean includeStartRowKey) {
     if (!actualScanIncludeStartRowKey) {
-      LOGGER.warn("Start key was already excluded for actualScanStartRowKey: {} ", actualScanStartRowKey);
+      LOGGER.warn("Start key was already excluded for actualScanStartRowKey: {} ",
+        actualScanStartRowKey);
     }
-    //This depends on the HBase 3 implementation, that handles exclusion natively
-    return !includeStartRowKey && Bytes.equals(actualScanStartRowKey, scanStartRowKey); 
+    // This depends on the HBase 3 implementation, that handles exclusion natively
+    return !includeStartRowKey && Bytes.equals(actualScanStartRowKey, scanStartRowKey);
   }
 }

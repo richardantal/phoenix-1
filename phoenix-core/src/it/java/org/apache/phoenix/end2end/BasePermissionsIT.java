@@ -17,12 +17,7 @@
  */
 package org.apache.phoenix.end2end;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
@@ -45,13 +40,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.AuthUtil;
-import org.apache.hadoop.hbase.Coprocessor;
-import org.apache.hadoop.hbase.CoprocessorEnvironment;
-import org.apache.hadoop.hbase.IntegrationTestingUtility;
-import org.apache.hadoop.hbase.LocalHBaseCluster;
-import org.apache.hadoop.hbase.NamespaceDescriptor;
-import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.Waiter.Predicate;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.coprocessor.RegionCoprocessorEnvironment;
@@ -73,13 +62,14 @@ import org.apache.phoenix.jdbc.PhoenixStatement;
 import org.apache.phoenix.query.BaseTest;
 import org.apache.phoenix.query.QueryConstants;
 import org.apache.phoenix.query.QueryServices;
+import org.apache.phoenix.query.QueryServicesOptions;
 import org.apache.phoenix.schema.NewerSchemaAlreadyExistsException;
 import org.apache.phoenix.schema.TableNotFoundException;
 import org.apache.phoenix.util.PhoenixRuntime;
+import org.apache.phoenix.util.ReadOnlyProps;
 import org.apache.phoenix.util.SchemaUtil;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,8 +81,11 @@ import org.apache.phoenix.thirdparty.com.google.common.collect.Maps;
 
 import org.apache.hadoop.hbase.shaded.protobuf.ResponseConverter;
 
+@Category(NeedsOwnMiniClusterTest.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public abstract class BasePermissionsIT {
+public abstract class BasePermissionsIT extends BaseTest {
+
+  private static String tmpDir;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BasePermissionsIT.class);
 
@@ -173,29 +166,70 @@ public abstract class BasePermissionsIT {
 
   static void initCluster(boolean isNamespaceMapped, boolean useCustomAccessController)
     throws Exception {
-    if (null != testUtil) {
-      testUtil.shutdownMiniCluster();
-      testUtil = null;
+    if (
+      clusterInitialized && Boolean.valueOf(isNamespaceMapped).equals(
+        utility.getConfiguration().getBoolean(QueryServices.IS_NAMESPACE_MAPPING_ENABLED, true))
+    ) {
+      // Perf optimization: no need to re-initialize the minicluster
+      return;
+    } else {
+      // This has been known to cause flakeyness
+      // Maybe we're gonna have to refactor the namespace
+      if (clusterInitialized) {
+        deletePriorMetaData(HConstants.LATEST_TIMESTAMP, url);
+        tearDownMiniCluster(0);
+        System.setProperty("java.io.tmpdir", tmpDir);
+      } else {
+        tmpDir = System.getProperty("java.io.tmpdir");
+      }
+      Map<String, String> serverProps = Maps.newHashMapWithExpectedSize(2);
+      serverProps.put(QueryServices.STATS_GUIDEPOST_WIDTH_BYTES_ATTRIB, Long.toString(20));
+      serverProps.put(QueryServices.MAX_SERVER_METADATA_CACHE_TIME_TO_LIVE_MS_ATTRIB,
+        Long.toString(5));
+      serverProps.put(QueryServices.EXTRA_JDBC_ARGUMENTS_ATTRIB,
+        QueryServicesOptions.DEFAULT_EXTRA_JDBC_ARGUMENTS);
+      serverProps.put(QueryServices.INDEX_REBUILD_PAGE_SIZE_IN_ROWS, Long.toString(8));
+      serverProps.put(QueryServices.TRANSACTIONS_ENABLED, Boolean.TRUE.toString());
+      serverProps.put(QueryServices.IS_NAMESPACE_MAPPING_ENABLED,
+        Boolean.toString(isNamespaceMapped));
+
+      serverProps.put(QueryServices.USE_STATS_FOR_PARALLELIZATION, Boolean.toString(true));
+      serverProps.put(QueryServices.STATS_UPDATE_FREQ_MS_ATTRIB, Long.toString(5));
+      serverProps.put(QueryServices.FORCE_ROW_KEY_ORDER_ATTRIB, Boolean.TRUE.toString());
+
+      enablePhoenixHBaseAuthorization(serverProps, useCustomAccessController);
+      configureNamespacesOnServer(serverProps, isNamespaceMapped);
+      configureStatsConfigurations(serverProps);
+
+      serverProps.put(LocalHBaseCluster.ASSIGN_RANDOM_PORTS, Boolean.toString(true));
+
+      setUpTestDriver(new ReadOnlyProps(serverProps.entrySet().iterator()));
     }
 
-    testUtil = new IntegrationTestingUtility();
+    Configuration confug = utility.getConfiguration();
+    System.out.println("asdasdconf");
+    for (Map.Entry<String, String> c : confug) {
+      System.out.println(c.getKey() + " " + c.getValue());
 
-    Configuration config = testUtil.getConfiguration();
-    enablePhoenixHBaseAuthorization(config, useCustomAccessController);
-    configureNamespacesOnServer(config, isNamespaceMapped);
-    configureStatsConfigurations(config);
-    config.setBoolean(LocalHBaseCluster.ASSIGN_RANDOM_PORTS, true);
-    BaseTest.setPhoenixRegionServerEndpoint(config);
+    }
+    System.out.println(confug.size());
+    System.out.println("asdasdconf");
 
-    testUtil.startMiniCluster(1);
+    testUtil = utility;
+
     superUser1 = User.createUserForTesting(config, SUPER_USER, new String[0]);
     superUser2 = User.createUserForTesting(config, "superUser2", new String[0]);
 
   }
 
+  @AfterClass
+  public static void deleteClusterData() throws Exception {
+    deletePriorMetaData(HConstants.LATEST_TIMESTAMP, url);
+  }
+
   @Before
   public void initUsersAndTables() {
-    Configuration configuration = testUtil.getConfiguration();
+    Configuration configuration = utility.getConfiguration();
 
     regularUser1 = User.createUserForTesting(configuration,
       "regularUser1_" + BaseTest.generateUniqueName(), new String[0]);
@@ -206,7 +240,7 @@ public abstract class BasePermissionsIT {
     regularUser4 = User.createUserForTesting(configuration,
       "regularUser4_" + BaseTest.generateUniqueName(), new String[0]);
 
-    groupUser = User.createUserForTesting(testUtil.getConfiguration(),
+    groupUser = User.createUserForTesting(configuration,
       "groupUser_" + BaseTest.generateUniqueName(), new String[] { GROUP_SYSTEM_ACCESS });
 
     unprivilegedUser = User.createUserForTesting(configuration,
@@ -223,42 +257,47 @@ public abstract class BasePermissionsIT {
     view2TableName = tableName + "_V2";
   }
 
-  private static void enablePhoenixHBaseAuthorization(Configuration config,
+  private static void enablePhoenixHBaseAuthorization(Map<String, String> serverProps,
     boolean useCustomAccessController) {
-    config.set("hbase.superuser", SUPER_USER + "," + "superUser2");
-    config.set("hbase.security.authorization", Boolean.TRUE.toString());
-    config.set("hbase.security.exec.permission.checks", Boolean.TRUE.toString());
+    serverProps.put("hbase.superuser", SUPER_USER + "," + "superUser2");
+    serverProps.put("hbase.security.authorization", Boolean.TRUE.toString());
+
+    serverProps.put("hbase.security.exec.permission.checks", Boolean.TRUE.toString());
     if (useCustomAccessController) {
-      config.set("hbase.coprocessor.master.classes", CustomAccessController.class.getName());
-      config.set("hbase.coprocessor.region.classes", CustomAccessController.class.getName());
-      config.set("hbase.coprocessor.regionserver.classes", CustomAccessController.class.getName());
+      serverProps.put("hbase.coprocessor.master.classes", CustomAccessController.class.getName());
+      serverProps.put("hbase.coprocessor.region.classes", CustomAccessController.class.getName());
+      serverProps.put("hbase.coprocessor.regionserver.classes",
+        CustomAccessController.class.getName());
     } else {
-      config.set("hbase.coprocessor.master.classes",
+      serverProps.put("hbase.coprocessor.master.classes",
         "org.apache.hadoop.hbase.security.access.AccessController");
-      config.set("hbase.coprocessor.region.classes",
+      serverProps.put("hbase.coprocessor.region.classes",
         "org.apache.hadoop.hbase.security.access.AccessController");
-      config.set("hbase.coprocessor.regionserver.classes",
+      serverProps.put("hbase.coprocessor.regionserver.classes",
         "org.apache.hadoop.hbase.security.access.AccessController");
     }
-    config.set(QueryServices.PHOENIX_ACLS_ENABLED, "true");
+    serverProps.put(QueryServices.PHOENIX_ACLS_ENABLED, "true");
 
-    config.set("hbase.regionserver.wal.codec",
+    serverProps.put("hbase.regionserver.wal.codec",
       "org.apache.hadoop.hbase.regionserver.wal.IndexedWALEditCodec");
   }
 
-  private static void configureNamespacesOnServer(Configuration conf, boolean isNamespaceMapped) {
-    conf.set(QueryServices.IS_NAMESPACE_MAPPING_ENABLED, Boolean.toString(isNamespaceMapped));
+  private static void configureNamespacesOnServer(Map<String, String> serverProps,
+    boolean isNamespaceMapped) {
+    serverProps.put(QueryServices.IS_NAMESPACE_MAPPING_ENABLED,
+      Boolean.toString(isNamespaceMapped));
   }
 
-  private static void configureStatsConfigurations(Configuration conf) {
-    conf.set(QueryServices.STATS_GUIDEPOST_WIDTH_BYTES_ATTRIB, Long.toString(20));
-    conf.set(QueryServices.STATS_UPDATE_FREQ_MS_ATTRIB, Long.toString(5));
-    conf.set(QueryServices.MAX_SERVER_METADATA_CACHE_TIME_TO_LIVE_MS_ATTRIB, Long.toString(5));
-    conf.set(QueryServices.USE_STATS_FOR_PARALLELIZATION, Boolean.toString(true));
+  private static void configureStatsConfigurations(Map<String, String> serverProps) {
+    serverProps.put(QueryServices.STATS_GUIDEPOST_WIDTH_BYTES_ATTRIB, Long.toString(20));
+    serverProps.put(QueryServices.STATS_UPDATE_FREQ_MS_ATTRIB, Long.toString(5));
+    serverProps.put(QueryServices.MAX_SERVER_METADATA_CACHE_TIME_TO_LIVE_MS_ATTRIB,
+      Long.toString(5));
+    serverProps.put(QueryServices.USE_STATS_FOR_PARALLELIZATION, Boolean.toString(true));
   }
 
   public static IntegrationTestingUtility getUtility() {
-    return testUtil;
+    return utility;
   }
 
   // Utility functions to grant permissions with HBase API
@@ -362,12 +401,12 @@ public abstract class BasePermissionsIT {
   }
 
   protected static String getUrl() {
-    return "jdbc:phoenix+zk:localhost:" + testUtil.getZkCluster().getClientPort() + ":/hbase";
+    return "jdbc:phoenix+zk:localhost:" + utility.getZkCluster().getClientPort() + ":/hbase";
   }
 
   private static Set<String> getHBaseTables() throws IOException {
     Set<String> tables = new HashSet<>();
-    for (TableName tn : testUtil.getAdmin().listTableNames()) {
+    for (TableName tn : utility.getAdmin().listTableNames()) {
       tables.add(tn.getNameAsString());
     }
     return tables;
@@ -446,7 +485,7 @@ public abstract class BasePermissionsIT {
     };
   }
 
-  private AccessTestAction revokePermissions(final Object ug, final String tableOrSchemaList,
+  protected AccessTestAction revokePermissions(final Object ug, final String tableOrSchemaList,
     final boolean isSchema) throws SQLException {
     return revokePermissions(ug, Collections.singleton(tableOrSchemaList), isSchema);
   }
@@ -1151,8 +1190,7 @@ public abstract class BasePermissionsIT {
       // TableNotFoundException since SYSCAT doesn't exist
       // 2. Any other client --> Gets ADE, runs client server compatibility check again and gets
       // AccessDeniedException since it doesn't have EXEC perms
-      verifyDenied(getConnectionAction(), org.apache.hadoop.hbase.TableNotFoundException.class,
-        regularUser1);
+      verifyDenied(getConnectionAction(), AccessDeniedException.class, regularUser1);
     }
 
     // Initialize Phoenix to avoid timeouts later
@@ -1791,7 +1829,7 @@ public abstract class BasePermissionsIT {
   // there
   private static List<AccessController> getAccessControllers() {
     List<AccessController> result = Lists.newArrayList();
-    for (RegionServerThread t : testUtil.getHBaseCluster().getLiveRegionServerThreads()) {
+    for (RegionServerThread t : utility.getHBaseCluster().getLiveRegionServerThreads()) {
       for (HRegion region : t.getRegionServer().getOnlineRegionsLocalContext()) {
         Coprocessor cp =
           region.getCoprocessorHost().findCoprocessor(AccessController.class.getName());

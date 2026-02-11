@@ -316,6 +316,10 @@
             <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-1.2-api</ignoredUnusedDeclaredDependency>
             <ignoredUnusedDeclaredDependency>org.slf4j:jul-to-slf4j</ignoredUnusedDeclaredDependency>
             <ignoredUnusedDeclaredDependency>org.slf4j:jcl-over-slf4j</ignoredUnusedDeclaredDependency>
+            <ignoredUnusedDeclaredDependency>org.apache.phoenix:phoenix-core</ignoredUnusedDeclaredDependency>
+            <ignoredUnusedDeclaredDependency>org.apache.hbase:hbase-client</ignoredUnusedDeclaredDependency>
+            <ignoredUnusedDeclaredDependency>org.apache.hbase:hbase-server</ignoredUnusedDeclaredDependency>
+            <ignoredUnusedDeclaredDependency>com.jcabi:jcabi-jdbc</ignoredUnusedDeclaredDependency>
           </ignoredUnusedDeclaredDependencies>
           <ignoredUsedUndeclaredDependencies>
             <ignoredUsedUndeclaredDependency>jakarta.xml.bind:jakarta.xml.bind-api</ignoredUsedUndeclaredDependency>
