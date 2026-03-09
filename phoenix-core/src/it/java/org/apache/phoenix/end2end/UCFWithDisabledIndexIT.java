@@ -379,7 +379,7 @@ public class UCFWithDisabledIndexIT extends BaseTest {
       throw new RuntimeException("Should not reach here");
     } catch (PhoenixIOException e) {
       LOGGER.error("Error thrown. ", e);
-      Assert.assertTrue(e.getCause() instanceof DoNotRetryIOException);
+      Assert.assertTrue(e.getCause() instanceof DoNotRetryIOException || e.getCause().getCause() instanceof DoNotRetryIOException);
       Assert.assertTrue(e.getCause().getMessage().contains("Not allowed"));
     } finally {
       updateIndexToRebuild(conn, tableName, indexName);

@@ -66,7 +66,7 @@ public class ServerToServerRpcControllerImpl extends ServerRpcController
     System.out
       .println("asd server to server setPriority called with " + priority + " " + this.priority);
     setPriority(tn);
-    setPriority(Math.max(priority, this.priority));
+    setPriority(priority);
   }
 
   @Override

@@ -44,6 +44,7 @@ class IndexRpcController extends DelegatingHBaseRpcController {
 
   @Override
   public void setPriority(final TableName tn) {
+    System.out.println("asd index setPriority called with " + tn);
     if (tn != null && !tn.isSystemTable() && !tn.getNameAsString().equals(tracingTableName)) {
       setPriority(this.priority);
     } else {
@@ -53,6 +54,7 @@ class IndexRpcController extends DelegatingHBaseRpcController {
 
   // @Override after Hbase 3.0
   public void setPriority(int priority, final TableName tn) {
+    System.out.println("asd index setPriority called with " + priority + " " + tn);
     setPriority(tn);
     setPriority(priority);
   }

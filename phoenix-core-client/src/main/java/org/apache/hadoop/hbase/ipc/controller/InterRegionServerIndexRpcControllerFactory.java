@@ -34,6 +34,7 @@ public class InterRegionServerIndexRpcControllerFactory extends CompatRPCControl
 
   @Override
   protected HBaseRpcController getController(HBaseRpcController delegate) {
+    System.out.println("ASD asd getting controller InterRegionServerIndexRpcControllerFactory");
     // construct a chain of controllers: metadata, index and standard controller
     IndexRpcController indexRpcController = new IndexRpcController(delegate, conf);
     return new MetadataRpcController(indexRpcController, conf);

@@ -33,6 +33,7 @@ public class ServerRpcControllerFactory extends CompatRPCControllerFactory {
   }
 
   protected HBaseRpcController getController(HBaseRpcController delegate) {
+    System.out.println("ASD asd getting controller ServerRpcControllerFactory");
     return new ServerRpcController(delegate, conf);
   }
 

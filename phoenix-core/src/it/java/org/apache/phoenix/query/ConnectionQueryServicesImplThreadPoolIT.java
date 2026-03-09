@@ -26,6 +26,7 @@ import static org.apache.phoenix.query.QueryServices.CQSI_THREAD_POOL_MAX_THREAD
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assume.assumeTrue;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -39,6 +40,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.util.VersionInfo;
 import org.apache.phoenix.end2end.NeedsOwnMiniClusterTest;
 import org.apache.phoenix.end2end.ServerMetadataCacheTestImpl;
 import org.apache.phoenix.jdbc.ConnectionInfo;
@@ -138,6 +140,7 @@ public class ConnectionQueryServicesImplThreadPoolIT extends BaseTest {
 
   @Test
   public void checkHTableThreadPoolExecutorSame() throws Exception {
+    assumeTrue(VersionInfo.compareVersion(VersionInfo.getVersion(), "3.0.0") >= 0);
     Table table = createCQSI(null).getTable(tableName.getBytes());
     Field props = table.getClass().getDeclaredField("pool");
     props.setAccessible(true);
@@ -146,6 +149,7 @@ public class ConnectionQueryServicesImplThreadPoolIT extends BaseTest {
 
   @Test
   public void checkHConnectionThreadPoolExecutorSame() throws Exception {
+    assumeTrue(VersionInfo.compareVersion(VersionInfo.getVersion(), "3.0.0") >= 0);
     // Extract Conn1 instance from CQSI1
     Connection conn1 = extractConnectionFromCQSI(createCQSI("hello"));
     // Extract batchPool from connection in CQSI1

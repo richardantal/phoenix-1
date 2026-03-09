@@ -34,6 +34,7 @@ public class ClientRpcControllerFactory extends CompatRPCControllerFactory {
 
   @Override
   protected HBaseRpcController getController(HBaseRpcController delegate) {
+    System.out.println("ASD asd getting controller ClientRpcControllerFactory");
     return new MetadataRpcController(delegate, conf);
   }
 

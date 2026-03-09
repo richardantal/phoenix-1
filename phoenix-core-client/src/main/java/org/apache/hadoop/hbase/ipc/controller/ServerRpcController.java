@@ -73,7 +73,7 @@ class ServerRpcController extends DelegatingHBaseRpcController {
   public void setPriority(int priority, final TableName tn) {
     System.out.println("asd server setPriority called with " + priority + " " + this.priority);
     setPriority(tn);
-    setPriority(Math.max(priority, this.priority));
+    setPriority(priority);
   }
 
 }

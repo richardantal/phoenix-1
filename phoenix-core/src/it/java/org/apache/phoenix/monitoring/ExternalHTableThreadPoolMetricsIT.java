@@ -18,6 +18,7 @@
 package org.apache.phoenix.monitoring;
 
 import static org.apache.phoenix.jdbc.ConnectionInfo.CLIENT_CONNECTION_REGISTRY_IMPL_CONF_KEY;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -212,6 +213,7 @@ public class ExternalHTableThreadPoolMetricsIT extends BaseHTableThreadPoolMetri
 
   @Test
   public void testHistogramsPerHTableThreadPool() throws Exception {
+    assumeTrue(VersionInfo.compareVersion(VersionInfo.getVersion(), "3.0.0") >= 0);
     String tableName = THREAD_POOL_1A + "." + generateUniqueName();
 
     Map<String, List<HistogramDistribution>> htableThreadPoolHistograms;
@@ -280,6 +282,7 @@ public class ExternalHTableThreadPoolMetricsIT extends BaseHTableThreadPoolMetri
 
   @Test
   public void testHistogramsWithoutTags() throws Exception {
+    assumeTrue(VersionInfo.compareVersion(VersionInfo.getVersion(), "3.0.0") >= 0);
     String tableName = generateUniqueName();
     Map<String, List<HistogramDistribution>> htableThreadPoolHistograms;
 

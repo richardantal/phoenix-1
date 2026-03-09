@@ -126,7 +126,7 @@ public class HighAvailabilityTestingUtilityIT {
   /**
    * Test Phoenix connection creation and basic operations with HBase cluster(s) unavail.
    */
-  @Test
+  @Test(timeout = 300000 /* 5 mins */)
   public void testClusterUnavailableNormalConnection() throws Exception {
     doTestWhenOneHBaseDown(CLUSTERS.getHBaseCluster2(), () -> {
       CLUSTERS.logClustersStates();
@@ -145,7 +145,7 @@ public class HighAvailabilityTestingUtilityIT {
   /**
    * Test that replication works between HBase cluster(s).
    */
-  @Test
+  @Test(timeout = 300000 /* 5 mins */)
   public void testClusterReplication() throws Exception {
     try (Connection conn = CLUSTERS.getClusterConnection(0, haGroup)) {
       doTestBasicOperationsWithConnection(conn, tableName, null);
@@ -165,7 +165,7 @@ public class HighAvailabilityTestingUtilityIT {
   /**
    * Test that getting a new CQSI should fail when target cluster is failing.
    */
-  @Test
+  @Test(timeout = 300000 /* 5 mins */)
   public void testGetNewCQSShouldFail() throws Exception {
     doTestWhenOneZKDown(CLUSTERS.getHBaseCluster1(), () -> {
       try {
