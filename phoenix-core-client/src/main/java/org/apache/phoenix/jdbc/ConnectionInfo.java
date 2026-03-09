@@ -192,7 +192,7 @@ public abstract class ConnectionInfo {
         builder = new ZKConnectionInfo.Builder(url, configuration, props, info);
       } else {
         // No registry class set in config. Use version-dependent default
-        if (VersionInfo.getMajorVersion(VersionInfo.getVersion()) >= 3) {
+        if (VersionInfo.getMajorVersion(VersionInfo.getVersion()) >= 4) {
           builder = new RPCConnectionInfo.Builder(url, configuration, props, info);
         } else {
           builder = new ZKConnectionInfo.Builder(url, configuration, props, info);

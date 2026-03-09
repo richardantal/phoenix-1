@@ -29,7 +29,7 @@
 
   <properties>
     <!--    <hbase26.compat.version>2.6.0-hadoop3</hbase26.compat.version>-->
-    <hbase30.compat.version>3.0.0-beta-99-SNAPSHOT-duo39</hbase30.compat.version>
+    <hbase30.compat.version>3.0.0-beta-99-SNAPSHOT-duo40</hbase30.compat.version>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
     <maven.compiler.release>17</maven.compiler.release>

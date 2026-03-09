@@ -187,7 +187,7 @@ public class PhoenixMetricsIT extends BasePhoenixMetricsIT {
   public void testGlobalPhoenixMetricsForQueries() throws Exception {
     String tableName = generateUniqueName();
     try (Connection conn = DriverManager.getConnection(getUrl())) {
-      createTableAndInsertValues(tableName, true, false, 10, true, conn, false);
+      createTableAndInsertValues(tableName, true, false, 2500, true, conn, false);
     }
     resetGlobalMetrics(); // we want to count metrics related only to the below query
     Connection conn = DriverManager.getConnection(getUrl());
@@ -214,10 +214,7 @@ public class PhoenixMetricsIT extends BasePhoenixMetricsIT {
     assertTrue(GLOBAL_TASK_EXECUTION_TIME.getMetric().getValue() > 0);
 
     assertTrue(GLOBAL_HBASE_COUNT_RPC_CALLS.getMetric().getValue() > 0);
-    if (HbaseCompatCapabilities.BRANCH_2) {
-      // Until HBASE-29834 is fixed
-      assertTrue(GLOBAL_HBASE_COUNT_MILLS_BETWEEN_NEXTS.getMetric().getValue() > 0);
-    }
+    assertTrue(GLOBAL_HBASE_COUNT_MILLS_BETWEEN_NEXTS.getMetric().getValue() > 0);
     assertTrue(GLOBAL_HBASE_COUNT_BYTES_REGION_SERVER_RESULTS.getMetric().getValue() > 0);
     assertTrue(GLOBAL_HBASE_COUNT_SCANNED_REGIONS.getMetric().getValue() > 0);
 
@@ -250,8 +247,9 @@ public class PhoenixMetricsIT extends BasePhoenixMetricsIT {
   public void testGlobalPhoenixMetricsForUpsertSelect() throws Exception {
     String tableFrom = generateUniqueName();
     String tableTo = generateUniqueName();
+    int numRows = 2500;
     try (Connection conn = DriverManager.getConnection(getUrl())) {
-      createTableAndInsertValues(tableFrom, true, false, 10, true, conn, false);
+      createTableAndInsertValues(tableFrom, true, false, numRows, true, conn, false);
     }
     resetGlobalMetrics();
     String ddl = String.format(DDL, tableTo);
@@ -262,7 +260,7 @@ public class PhoenixMetricsIT extends BasePhoenixMetricsIT {
       stmt.executeUpdate(String.format(UPSERT_SELECT_DML, tableTo, tableFrom));
       conn.commit();
     }
-    assertEquals(10, GLOBAL_MUTATION_BATCH_SIZE.getMetric().getValue());
+    assertEquals(numRows, GLOBAL_MUTATION_BATCH_SIZE.getMetric().getValue());
     assertEquals(1, GLOBAL_MUTATION_SQL_COUNTER.getMetric().getValue());
     assertEquals(1, GLOBAL_NUM_PARALLEL_SCANS.getMetric().getValue());
     assertEquals(0, GLOBAL_QUERY_TIME.getMetric().getValue());
@@ -278,10 +276,7 @@ public class PhoenixMetricsIT extends BasePhoenixMetricsIT {
     assertEquals(0, GLOBAL_MUTATION_INDEX_COMMIT_FAILURE_COUNT.getMetric().getValue());
 
     assertTrue(GLOBAL_HBASE_COUNT_RPC_CALLS.getMetric().getValue() > 0);
-    if (HbaseCompatCapabilities.BRANCH_2) {
-      // Until HBASE-29834 is fixed
-      assertTrue(GLOBAL_HBASE_COUNT_MILLS_BETWEEN_NEXTS.getMetric().getValue() > 0);
-    }
+    assertTrue(GLOBAL_HBASE_COUNT_MILLS_BETWEEN_NEXTS.getMetric().getValue() > 0);
     assertTrue(GLOBAL_HBASE_COUNT_BYTES_REGION_SERVER_RESULTS.getMetric().getValue() > 0);
     assertTrue(GLOBAL_HBASE_COUNT_SCANNED_REGIONS.getMetric().getValue() > 0);
 

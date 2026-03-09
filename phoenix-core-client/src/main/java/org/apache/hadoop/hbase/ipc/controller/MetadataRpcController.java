@@ -71,7 +71,7 @@ class MetadataRpcController extends DelegatingHBaseRpcController {
 
   // @Override after Hbase 3.0
   public void setPriority(int priority, final TableName tn) {
-    System.out.println("asd metadata setPriority called with " + priority + " " + this.priority);
+    System.out.println("asd metadata setPriority called with " + priority + " " + this.priority + " " + tn);
     setPriority(tn);
     setPriority(Math.max(this.priority, priority));
   }
